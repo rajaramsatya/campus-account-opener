@@ -2,6 +2,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import type { Database } from '@/integrations/supabase/types';
+
+type AccountType = Database['public']['Enums']['account_type'];
+type EmploymentStatus = Database['public']['Enums']['employment_status'];
 
 export interface StudentApplicationData {
   id?: string;
@@ -88,9 +92,9 @@ export const useStudentApplication = () => {
         }
       }
 
-      // Prepare data for database
+      // Prepare data for database with proper type casting
       const dbData = {
-        account_type: data.accountType || null,
+        account_type: data.accountType as AccountType || null,
         first_name: data.firstName || null,
         last_name: data.lastName || null,
         email: data.email || null,
@@ -106,7 +110,7 @@ export const useStudentApplication = () => {
         university: data.university || null,
         student_id: data.studentId || null,
         graduation_year: data.graduationYear || null,
-        employment_status: data.employmentStatus || null,
+        employment_status: data.employmentStatus as EmploymentStatus || null,
         annual_income: data.annualIncome || null,
         agree_to_terms: data.agreeToTerms || false,
         agree_to_privacy: data.agreeToPrivacy || false,
