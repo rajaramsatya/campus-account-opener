@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Shield, CheckCircle, GraduationCap, CreditCard, PiggyBank, Camera, Upload, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useStudentApplication, StudentApplicationData } from '@/hooks/useStudentApplication';
 
 interface AccountOpeningFormProps {
   onBack: () => void;
@@ -16,7 +17,7 @@ interface AccountOpeningFormProps {
 
 const AccountOpeningForm = ({ onBack }: AccountOpeningFormProps) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<StudentApplicationData>({
     accountType: '',
     firstName: '',
     lastName: '',
@@ -24,8 +25,8 @@ const AccountOpeningForm = ({ onBack }: AccountOpeningFormProps) => {
     phone: '',
     dateOfBirth: '',
     ssn: '',
-    studentIdPhoto: null as File | null,
-    driversLicensePhoto: null as File | null,
+    studentIdPhoto: null,
+    driversLicensePhoto: null,
     address: '',
     city: '',
     state: '',
@@ -37,10 +38,13 @@ const AccountOpeningForm = ({ onBack }: AccountOpeningFormProps) => {
     annualIncome: '',
     agreeToTerms: false,
     agreeToPrivacy: false,
-    agreeToCredit: false
+    agreeToCredit: false,
+    currentStep: 1,
+    status: 'draft'
   });
   
   const { toast } = useToast();
+  const { isLoading, saveApplication, submitApplication } = useStudentApplication();
   const totalSteps = 5;
   const progress = (currentStep / totalSteps) * 100;
 
@@ -82,8 +86,14 @@ const AccountOpeningForm = ({ onBack }: AccountOpeningFormProps) => {
     handleInputChange(field, null);
   };
 
-  const nextStep = () => {
+  const saveCurrentStep = async () => {
+    const dataToSave = { ...formData, currentStep };
+    await saveApplication(dataToSave);
+  };
+
+  const nextStep = async () => {
     if (currentStep < totalSteps) {
+      await saveCurrentStep();
       setCurrentStep(currentStep + 1);
     }
   };
@@ -94,13 +104,12 @@ const AccountOpeningForm = ({ onBack }: AccountOpeningFormProps) => {
     }
   };
 
-  const handleSubmit = () => {
-    toast({
-      title: "Application Submitted Successfully!",
-      description: "We'll review your application and get back to you within 24 hours.",
-    });
-    // In a real app, this would submit to an API
-    console.log('Form submitted:', formData);
+  const handleSubmit = async () => {
+    const success = await submitApplication(formData);
+    if (success) {
+      // Optional: redirect or show success page
+      onBack();
+    }
   };
 
   const accountTypes = [
@@ -222,10 +231,10 @@ const AccountOpeningForm = ({ onBack }: AccountOpeningFormProps) => {
               <div className="flex justify-end">
                 <Button 
                   onClick={nextStep} 
-                  disabled={!formData.accountType}
+                  disabled={!formData.accountType || isLoading}
                   className="px-8"
                 >
-                  Continue
+                  {isLoading ? 'Saving...' : 'Continue'}
                 </Button>
               </div>
             </div>
@@ -468,9 +477,9 @@ const AccountOpeningForm = ({ onBack }: AccountOpeningFormProps) => {
                 </Button>
                 <Button 
                   onClick={nextStep}
-                  disabled={!formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.dateOfBirth || !formData.ssn || !formData.studentIdPhoto || !formData.driversLicensePhoto}
+                  disabled={!formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.dateOfBirth || !formData.ssn || !formData.studentIdPhoto || !formData.driversLicensePhoto || isLoading}
                 >
-                  Continue
+                  {isLoading ? 'Saving...' : 'Continue'}
                 </Button>
               </div>
             </div>
@@ -539,9 +548,9 @@ const AccountOpeningForm = ({ onBack }: AccountOpeningFormProps) => {
                 </Button>
                 <Button 
                   onClick={nextStep}
-                  disabled={!formData.address || !formData.city || !formData.state || !formData.zipCode}
+                  disabled={!formData.address || !formData.city || !formData.state || !formData.zipCode || isLoading}
                 >
-                  Continue
+                  {isLoading ? 'Saving...' : 'Continue'}
                 </Button>
               </div>
             </div>
@@ -632,9 +641,9 @@ const AccountOpeningForm = ({ onBack }: AccountOpeningFormProps) => {
                 </Button>
                 <Button 
                   onClick={nextStep}
-                  disabled={!formData.university || !formData.studentId || !formData.graduationYear}
+                  disabled={!formData.university || !formData.studentId || !formData.graduationYear || isLoading}
                 >
-                  Continue
+                  {isLoading ? 'Saving...' : 'Continue'}
                 </Button>
               </div>
             </div>
@@ -747,10 +756,10 @@ const AccountOpeningForm = ({ onBack }: AccountOpeningFormProps) => {
                 </Button>
                 <Button 
                   onClick={handleSubmit}
-                  disabled={!formData.agreeToTerms || !formData.agreeToPrivacy || !formData.agreeToCredit}
+                  disabled={!formData.agreeToTerms || !formData.agreeToPrivacy || !formData.agreeToCredit || isLoading}
                   className="bg-green-600 hover:bg-green-700"
                 >
-                  Submit Application
+                  {isLoading ? 'Submitting...' : 'Submit Application'}
                 </Button>
               </div>
             </div>

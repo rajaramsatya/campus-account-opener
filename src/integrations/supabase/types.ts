@@ -9,7 +9,102 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      student_applications: {
+        Row: {
+          account_type: Database["public"]["Enums"]["account_type"] | null
+          address: string | null
+          agree_to_credit: boolean | null
+          agree_to_privacy: boolean | null
+          agree_to_terms: boolean | null
+          annual_income: string | null
+          city: string | null
+          created_at: string
+          current_step: number | null
+          date_of_birth: string | null
+          drivers_license_photo_url: string | null
+          email: string | null
+          employment_status:
+            | Database["public"]["Enums"]["employment_status"]
+            | null
+          first_name: string | null
+          graduation_year: string | null
+          id: string
+          last_name: string | null
+          phone: string | null
+          ssn_encrypted: string | null
+          state: string | null
+          status: string | null
+          student_id: string | null
+          student_id_photo_url: string | null
+          university: string | null
+          updated_at: string
+          user_id: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          account_type?: Database["public"]["Enums"]["account_type"] | null
+          address?: string | null
+          agree_to_credit?: boolean | null
+          agree_to_privacy?: boolean | null
+          agree_to_terms?: boolean | null
+          annual_income?: string | null
+          city?: string | null
+          created_at?: string
+          current_step?: number | null
+          date_of_birth?: string | null
+          drivers_license_photo_url?: string | null
+          email?: string | null
+          employment_status?:
+            | Database["public"]["Enums"]["employment_status"]
+            | null
+          first_name?: string | null
+          graduation_year?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+          ssn_encrypted?: string | null
+          state?: string | null
+          status?: string | null
+          student_id?: string | null
+          student_id_photo_url?: string | null
+          university?: string | null
+          updated_at?: string
+          user_id?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          account_type?: Database["public"]["Enums"]["account_type"] | null
+          address?: string | null
+          agree_to_credit?: boolean | null
+          agree_to_privacy?: boolean | null
+          agree_to_terms?: boolean | null
+          annual_income?: string | null
+          city?: string | null
+          created_at?: string
+          current_step?: number | null
+          date_of_birth?: string | null
+          drivers_license_photo_url?: string | null
+          email?: string | null
+          employment_status?:
+            | Database["public"]["Enums"]["employment_status"]
+            | null
+          first_name?: string | null
+          graduation_year?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+          ssn_encrypted?: string | null
+          state?: string | null
+          status?: string | null
+          student_id?: string | null
+          student_id_photo_url?: string | null
+          university?: string | null
+          updated_at?: string
+          user_id?: string | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +113,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      account_type: "checking" | "savings" | "both"
+      employment_status: "unemployed" | "part-time" | "full-time" | "internship"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +229,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      account_type: ["checking", "savings", "both"],
+      employment_status: ["unemployed", "part-time", "full-time", "internship"],
+    },
   },
 } as const
