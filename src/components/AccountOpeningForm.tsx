@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -8,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Shield, CheckCircle, GraduationCap, CreditCard, PiggyBank } from 'lucide-react';
+import { ArrowLeft, Shield, CheckCircle, GraduationCap, CreditCard, PiggyBank, Camera, Upload, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface AccountOpeningFormProps {
@@ -25,6 +24,8 @@ const AccountOpeningForm = ({ onBack }: AccountOpeningFormProps) => {
     phone: '',
     dateOfBirth: '',
     ssn: '',
+    studentIdPhoto: null as File | null,
+    driversLicensePhoto: null as File | null,
     address: '',
     city: '',
     state: '',
@@ -43,8 +44,42 @@ const AccountOpeningForm = ({ onBack }: AccountOpeningFormProps) => {
   const totalSteps = 5;
   const progress = (currentStep / totalSteps) * 100;
 
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (field: string, value: string | boolean | File | null) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleFileUpload = (field: 'studentIdPhoto' | 'driversLicensePhoto', file: File) => {
+    // Basic validation
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const maxSize = 10 * 1024 * 1024; // 10MB
+
+    if (!validTypes.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a JPEG, PNG, or WebP image.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (file.size > maxSize) {
+      toast({
+        title: "File too large",
+        description: "Please upload an image smaller than 10MB.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    handleInputChange(field, file);
+    toast({
+      title: "Photo uploaded successfully",
+      description: `${field === 'studentIdPhoto' ? 'Student ID' : 'Driver\'s License'} photo has been uploaded.`,
+    });
+  };
+
+  const removePhoto = (field: 'studentIdPhoto' | 'driversLicensePhoto') => {
+    handleInputChange(field, null);
   };
 
   const nextStep = () => {
@@ -127,7 +162,7 @@ const AccountOpeningForm = ({ onBack }: AccountOpeningFormProps) => {
             <Progress value={progress} className="h-2" />
             <div className="flex justify-between text-xs text-gray-500">
               <span className={currentStep >= 1 ? 'text-blue-600 font-medium' : ''}>Account Type</span>
-              <span className={currentStep >= 2 ? 'text-blue-600 font-medium' : ''}>Personal Info</span>
+              <span className={currentStep >= 2 ? 'text-blue-600 font-medium' : ''}>Identity Verification</span>
               <span className={currentStep >= 3 ? 'text-blue-600 font-medium' : ''}>Address</span>
               <span className={currentStep >= 4 ? 'text-blue-600 font-medium' : ''}>Student Info</span>
               <span className={currentStep >= 5 ? 'text-blue-600 font-medium' : ''}>Review</span>
@@ -196,11 +231,11 @@ const AccountOpeningForm = ({ onBack }: AccountOpeningFormProps) => {
             </div>
           )}
 
-          {/* Step 2: Personal Information */}
+          {/* Step 2: Identity Verification */}
           {currentStep === 2 && (
             <div className="space-y-6">
               <div className="text-center space-y-2">
-                <h2 className="text-2xl font-bold text-gray-900">Personal Information</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Identity Verification</h2>
                 <p className="text-gray-600">Help us verify your identity to protect your account</p>
               </div>
 
@@ -265,13 +300,175 @@ const AccountOpeningForm = ({ onBack }: AccountOpeningFormProps) => {
                 </div>
               </div>
 
+              {/* Photo Upload Section */}
+              <div className="space-y-6 border-t pt-6">
+                <h3 className="text-lg font-semibold text-gray-900">Document Verification</h3>
+                <p className="text-sm text-gray-600">Please upload photos of your identification documents for verification purposes.</p>
+                
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Student ID Upload */}
+                  <div className="space-y-3">
+                    <Label>Student ID Photo *</Label>
+                    {!formData.studentIdPhoto ? (
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                        <Camera className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 mb-3">Take a photo of your Student ID</p>
+                        <div className="space-y-2">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleFileUpload('studentIdPhoto', file);
+                            }}
+                            className="hidden"
+                            id="studentIdInput"
+                          />
+                          <Label htmlFor="studentIdInput" className="cursor-pointer">
+                            <Button type="button" variant="outline" className="w-full" asChild>
+                              <span>
+                                <Camera className="h-4 w-4 mr-2" />
+                                Take Photo
+                              </span>
+                            </Button>
+                          </Label>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleFileUpload('studentIdPhoto', file);
+                            }}
+                            className="hidden"
+                            id="studentIdUpload"
+                          />
+                          <Label htmlFor="studentIdUpload" className="cursor-pointer">
+                            <Button type="button" variant="ghost" className="w-full" asChild>
+                              <span>
+                                <Upload className="h-4 w-4 mr-2" />
+                                Or Upload from Gallery
+                              </span>
+                            </Button>
+                          </Label>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div className="bg-green-100 p-2 rounded">
+                              <CheckCircle className="h-5 w-5 text-green-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">Student ID Uploaded</p>
+                              <p className="text-sm text-gray-500">{formData.studentIdPhoto.name}</p>
+                            </div>
+                          </div>
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => removePhoto('studentIdPhoto')}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Driver's License Upload */}
+                  <div className="space-y-3">
+                    <Label>Driver's License Photo *</Label>
+                    {!formData.driversLicensePhoto ? (
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                        <Camera className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 mb-3">Take a photo of your Driver's License</p>
+                        <div className="space-y-2">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleFileUpload('driversLicensePhoto', file);
+                            }}
+                            className="hidden"
+                            id="licenseInput"
+                          />
+                          <Label htmlFor="licenseInput" className="cursor-pointer">
+                            <Button type="button" variant="outline" className="w-full" asChild>
+                              <span>
+                                <Camera className="h-4 w-4 mr-2" />
+                                Take Photo
+                              </span>
+                            </Button>
+                          </Label>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleFileUpload('driversLicensePhoto', file);
+                            }}
+                            className="hidden"
+                            id="licenseUpload"
+                          />
+                          <Label htmlFor="licenseUpload" className="cursor-pointer">
+                            <Button type="button" variant="ghost" className="w-full" asChild>
+                              <span>
+                                <Upload className="h-4 w-4 mr-2" />
+                                Or Upload from Gallery
+                              </span>
+                            </Button>
+                          </Label>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div className="bg-green-100 p-2 rounded">
+                              <CheckCircle className="h-5 w-5 text-green-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">Driver's License Uploaded</p>
+                              <p className="text-sm text-gray-500">{formData.driversLicensePhoto.name}</p>
+                            </div>
+                          </div>
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => removePhoto('driversLicensePhoto')}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-start space-x-3">
+                    <Shield className="h-5 w-5 text-blue-600 mt-0.5" />
+                    <div className="text-sm">
+                      <p className="font-medium text-blue-900">Your privacy is protected</p>
+                      <p className="text-blue-700">All uploaded documents are encrypted and used solely for identity verification purposes.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="flex justify-between">
                 <Button variant="outline" onClick={prevStep}>
                   Previous
                 </Button>
                 <Button 
                   onClick={nextStep}
-                  disabled={!formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.dateOfBirth || !formData.ssn}
+                  disabled={!formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.dateOfBirth || !formData.ssn || !formData.studentIdPhoto || !formData.driversLicensePhoto}
                 >
                   Continue
                 </Button>
@@ -484,6 +681,19 @@ const AccountOpeningForm = ({ onBack }: AccountOpeningFormProps) => {
                       <p>University: {formData.university}</p>
                       <p>Student ID: {formData.studentId}</p>
                       <p>Graduation: {formData.graduationYear}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Documents Uploaded</h4>
+                    <div className="space-y-1 text-gray-600">
+                      <div className="flex items-center space-x-2">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <span>Student ID Photo</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <span>Driver's License Photo</span>
+                      </div>
                     </div>
                   </div>
                 </div>
